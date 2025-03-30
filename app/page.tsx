@@ -1,101 +1,134 @@
-import Image from "next/image";
+// app/page.tsx
+"use client";
+
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import LifestyleInput from "./components/LifestyleInput";
+import DataDisplay from "./components/DataDisplay";
+import AICoachInsights from "./components/AICoachInsights";
+
+// Mock function to simulate fetching data from a Garmin tracker.
+const mockGarminData = async (): Promise<{
+  bodyBattery: number;
+  sleepScore: number;
+  stressLevel: number;
+}> => {
+  // Simulate network latency.
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+
+  // Generate random simulated data.
+  const bodyBattery = Math.floor(Math.random() * 100);
+  const sleepScore = Math.floor(Math.random() * 100);
+  const stressLevel = Math.floor(Math.random() * 10); // Scale of 1-10
+
+  return { bodyBattery, sleepScore, stressLevel };
+};
+
+// Mock function to simulate AI coach insights based on a lifestyle change.
+const mockAICoach = async (lifestyleChange: string): Promise<string> => {
+  // Simulate network latency.
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Return a mock AI insight.
+  return `Based on your input: "${lifestyleChange}", our AI predicts a slight improvement in your overall well-being. Expect your body battery to increase, your sleep score to improve, and your stress level to decrease. Remember, this is just a simulation, not medical advice!`;
+};
 
 return function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [lifestyleChange, setLifestyleChange] = useState("");
+  const [bodyBattery, setBodyBattery] = useState<number | null>(null);
+  const [sleepScore, setSleepScore] = useState<number | null>(null);
+  const [stressLevel, setStressLevel] = useState<number | null>(null);
+  const [aiInsights, setAiInsights] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleSubmit = async (change: string) => {
+    setIsLoading(true);
+    setLifestyleChange(change); // keep a memory of what they entered for display
+    setBodyBattery(null);
+    setSleepScore(null);
+    setStressLevel(null);
+    setAiInsights("");
+
+    try {
+      const garminData = await mockGarminData();
+      const aiResponse = await mockAICoach(change);
+
+      setBodyBattery(garminData.bodyBattery);
+      setSleepScore(garminData.sleepScore);
+      setStressLevel(garminData.stressLevel);
+      setAiInsights(aiResponse);
+    } catch (error) {
+      console.error("Error generating data:", error);
+      setAiInsights("Error generating data. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4 sm:p-6 md:p-8">
+      <h1 className="text-3xl font-extrabold text-gray-800 mb-4">Mock Life Changer</h1>
+      <p className="text-gray-600 mb-4 text-center">
+        Simulate the impact of lifestyle changes on your health metrics.{" "}
+        <span className="font-bold text-red-500">
+          *Simulated Data - Not Medical Advice*
+        </span>
+      </p>
+
+      <div className="w-full max-w-3xl flex flex-col md:flex-row gap-6">
+        <div className="md:w-1/2">
+          <LifestyleInput onSubmit={handleSubmit} />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <div className="md:w-1/2">
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="text-center"
+            >
+              <p>Generating simulated data...</p>
+              {/* Add loading spinner here if desired */}
+            </motion.div>
+          )}
+
+          {bodyBattery !== null && sleepScore !== null && stressLevel !== null && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-4"
+            >
+              <DataDisplay
+                bodyBattery={bodyBattery}
+                sleepScore={sleepScore}
+                stressLevel={stressLevel}
+              />
+              <p className="text-sm text-gray-500 italic mt-2">
+                Simulated Data Based on: "{lifestyleChange}"
+              </p>
+            </motion.div>
+          )}
+
+          {aiInsights && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <AICoachInsights insights={aiInsights} />
+              <p className="text-xs text-gray-500 italic mt-1">
+                Simulated AI Insights
+              </p>
+            </motion.div>
+          )}
+        </div>
+      </div>
+      <p className="text-xs text-gray-500 mt-4">
+        Disclaimer: This is a simulation for demonstration purposes only. Not
+        intended for medical advice.
+      </p>
     </div>
   );
 }
